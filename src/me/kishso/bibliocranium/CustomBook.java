@@ -18,8 +18,11 @@ public class CustomBook {
 
     public static boolean isDisplayOnly(BookMeta bookMeta){
         List<String> lore = bookMeta.getLore();
-        return lore.contains("Display Only");
-
+        if(lore != null) {
+            return lore.contains("Display Only");
+        }else{
+            return false;
+        }
     }
 
     public static Inventory open(BookMeta bookMeta){

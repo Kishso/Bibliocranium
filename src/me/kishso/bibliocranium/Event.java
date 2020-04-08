@@ -24,6 +24,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -81,54 +82,26 @@ public class Event implements Listener{
             }
         }
 
-        /*@EventHandler
+        @EventHandler
         public void inventoryClick(InventoryClickEvent event) {
-            if(event.getView().getTitle().contains("Display Only")) {
-                event.setCancelled(true);
-                return;
-            }
-            if(event.getView().getTitle().contains("HeadBooks")) {
-                if(event.getView().getTopInventory().equals(event.getClickedInventory())) {
-                    if(event.getWhoClicked().hasPermission("hb.useBooks")) {
-                        ItemStack item = event.getCurrentItem();
+            if(event.getView().getTitle().contains("Bibliocranium") && event.getClickedInventory().equals(event.getView().getTopInventory())){
+                if(event.getView().getTitle().contains("Display Only")){
+                    event.setCancelled(true);
+                }else{
+                    if(event.getCursor().getType().equals(Material.PLAYER_HEAD)){
                         event.setCancelled(true);
-                        if(event.isRightClick()) {
-                            item.setAmount(16);
+                        InventoryView invWin = event.getView();
+                        ItemStack clickedItem = invWin.getTopInventory().getItem(event.getSlot()).clone();
+                        if(clickedItem != null){
+                            int amt = event.getCursor().getAmount();
+                            clickedItem.setAmount(amt);
+                            event.getCursor().setAmount(0);
+                            event.getWhoClicked().getInventory().addItem(clickedItem);
                         }
-                        if(event.isShiftClick()) {
-                            item.setAmount(64);
-                        }
-                        event.getWhoClicked().getInventory().addItem(item);
-                        item.setAmount(1);
-                    }else {
+                    }else{
                         event.setCancelled(true);
-                        event.getWhoClicked().sendMessage(ChatColor.RED+"You do not have permission");
                     }
                 }
             }
         }
-
-        @EventHandler
-        public void blockPlace (BlockPlaceEvent event) {
-        }
-
-        @EventHandler
-        public void blockBreak (BlockBreakEvent event) {
-            if(event.getBlock().getType().equals(Material.PLAYER_HEAD)) {
-                Block block = event.getBlock();
-                Skull meta = (Skull)block.getState();
-                String uuid = meta.getOwningPlayer().getUniqueId().toString();
-                if(headMap.containsKey(uuid)) {
-                    Object[] drops = event.getBlock().getDrops().toArray();
-                    ItemStack drop = (ItemStack)drops[0];
-                    ItemMeta dropMeta = drop.getItemMeta();
-                    dropMeta.setDisplayName(ChatColor.BOLD+headMap.get(uuid));
-                    drop.setItemMeta(dropMeta);
-                    event.setDropItems(false);
-                    if(event.getPlayer().getGameMode().equals(GameMode.SURVIVAL)) {
-                        event.getBlock().getWorld().dropItem(event.getBlock().getLocation(), drop);
-                    }
-                }
-            }
-        }*/
 }
