@@ -1,0 +1,5 @@
+name: Bibliocranium
+version: 1.0
+author: Kishso
+main: me.kishso.bibliocranium.Main
+api-version: 1.15
