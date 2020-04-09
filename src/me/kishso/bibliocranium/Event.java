@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.TileState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,6 +26,8 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public class Event implements Listener{
 
@@ -99,6 +103,7 @@ public class Event implements Listener{
         }
 
 
+        NamespacedKey nameKey = new NamespacedKey(plugin, "DisplayName");
 
         @EventHandler
         public void placeHead(BlockPlaceEvent event){
@@ -108,6 +113,11 @@ public class Event implements Listener{
                 String displayName = skullMeta.getDisplayName();
                 BlockState blockState = event.getBlockPlaced().getState();
                 blockState.setMetadata("DisplayName", new FixedMetadataValue(plugin,displayName));
+
+                TileState tileState = (TileState) event.getBlockPlaced().getState();
+                PersistentDataContainer dataContainer = tileState.getPersistentDataContainer();
+                dataContainer.set(nameKey,PersistentDataType.STRING, displayName);
+                tileState.update();
             }
         }
 
@@ -121,6 +131,17 @@ public class Event implements Listener{
                     Object[] data = blockState.getMetadata("DisplayName").toArray();
                     FixedMetadataValue metadataValue = (FixedMetadataValue) data[0];
                     String displayName = metadataValue.asString();
+                    Object[] drops = block.getDrops().toArray();
+                    ItemStack drop = (ItemStack) drops[0];
+                    ItemMeta dropMeta = drop.getItemMeta();
+                    dropMeta.setDisplayName(displayName);
+                    drop.setItemMeta(dropMeta);
+                    block.getWorld().dropItem(block.getLocation(),drop);
+                }else{
+                    TileState tileState = (TileState) blockState;
+                    String displayName = tileState.getPersistentDataContainer().get(nameKey,PersistentDataType.STRING);
+
+                    event.setDropItems(false);
                     Object[] drops = block.getDrops().toArray();
                     ItemStack drop = (ItemStack) drops[0];
                     ItemMeta dropMeta = drop.getItemMeta();
