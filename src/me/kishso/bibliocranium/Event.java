@@ -1,16 +1,11 @@
 package me.kishso.bibliocranium;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Skull;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,16 +18,15 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class Event implements Listener{
 
-        //CustomSkull skull = new CustomSkull();
         Main plugin = Main.getPlugin(Main.class);
 
         @EventHandler
@@ -51,7 +45,7 @@ public class Event implements Listener{
         @EventHandler
         public void bookSigned(PlayerEditBookEvent event) {
             BookMeta bookMeta = event.getNewBookMeta();
-            if(bookMeta.getTitle().contains("BC") && event.isSigning()) {
+            if(event.isSigning() && bookMeta.getTitle().contains("BC")) {
                 event.setNewBookMeta(CustomBook.sign(bookMeta));
             }
         }
@@ -72,7 +66,7 @@ public class Event implements Listener{
         public void lecturnOpened(InventoryOpenEvent event) {
             if(event.getInventory().getType().equals(InventoryType.LECTERN)) {
                 ItemStack item = event.getInventory().getItem(0);
-                if(item.getType().equals(Material.WRITTEN_BOOK)) {
+                if(item != null && item.getType().equals(Material.WRITTEN_BOOK)) {
                     BookMeta bookMeta = (BookMeta)item.getItemMeta();
                     if(bookMeta.getTitle().contains("BC")) {
                         event.setCancelled(true);
@@ -85,23 +79,56 @@ public class Event implements Listener{
         @EventHandler
         public void inventoryClick(InventoryClickEvent event) {
             if(event.getView().getTitle().contains("Bibliocranium") && event.getClickedInventory().equals(event.getView().getTopInventory())){
+                event.setCancelled(true);
                 if(event.getView().getTitle().contains("Display Only")){
-                    event.setCancelled(true);
+                    event.getWhoClicked().sendMessage("Book is set to Display Only");
                 }else{
                     if(event.getCursor().getType().equals(Material.PLAYER_HEAD)){
-                        event.setCancelled(true);
                         InventoryView invWin = event.getView();
-                        ItemStack clickedItem = invWin.getTopInventory().getItem(event.getSlot()).clone();
+                        ItemStack clickedItem = invWin.getTopInventory().getItem(event.getSlot());
                         if(clickedItem != null){
+                            clickedItem = clickedItem.clone();
                             int amt = event.getCursor().getAmount();
                             clickedItem.setAmount(amt);
                             event.getCursor().setAmount(0);
                             event.getWhoClicked().getInventory().addItem(clickedItem);
                         }
-                    }else{
-                        event.setCancelled(true);
                     }
                 }
             }
         }
+
+
+
+        @EventHandler
+        public void placeHead(BlockPlaceEvent event){
+            if(event.getBlock().getType().equals(Material.PLAYER_HEAD)){
+                ItemStack head = event.getItemInHand();
+                SkullMeta skullMeta = (SkullMeta) head.getItemMeta();
+                String displayName = skullMeta.getDisplayName();
+                BlockState blockState = event.getBlockPlaced().getState();
+                blockState.setMetadata("DisplayName", new FixedMetadataValue(plugin,displayName));
+            }
+        }
+
+        @EventHandler
+        public void breakHead(BlockBreakEvent event){
+            if(event.getBlock().getType().equals(Material.PLAYER_HEAD)){
+                Block block = event.getBlock();
+                BlockState blockState = block.getState();
+                if(blockState.hasMetadata("DisplayName")){
+                    event.setDropItems(false);
+                    Object[] data = blockState.getMetadata("DisplayName").toArray();
+                    FixedMetadataValue metadataValue = (FixedMetadataValue) data[0];
+                    String displayName = metadataValue.asString();
+                    Object[] drops = block.getDrops().toArray();
+                    ItemStack drop = (ItemStack) drops[0];
+                    ItemMeta dropMeta = drop.getItemMeta();
+                    dropMeta.setDisplayName(displayName);
+                    drop.setItemMeta(dropMeta);
+                    block.getWorld().dropItem(block.getLocation(),drop);
+                }
+            }
+        }
+
 }

@@ -1,10 +1,12 @@
 package me.kishso.bibliocranium;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -16,6 +18,8 @@ public class CustomSkull extends ItemStack{
     private String displayName;
     private String textureValue; //In base64
     private UUID uuid;
+
+    public static  ArrayList<String> knownHeads = new ArrayList<String>();
 
     //Manual Constructor
     public CustomSkull(String name, String texture){
@@ -38,6 +42,18 @@ public class CustomSkull extends ItemStack{
         }catch(Exception e){
             System.out.println("Formatted Incorrectly");
         }
+    }
+
+    public UUID getUUId(){
+        return uuid;
+    }
+
+    public String getTextureValue(){
+        return textureValue;
+    }
+
+    public String getDisplayName(){
+        return displayName;
     }
 
 
@@ -68,6 +84,24 @@ public class CustomSkull extends ItemStack{
         //Set Meta and Return Skull
         skull.setItemMeta(skullMeta);
         return skull;
+    }
+
+    public static ItemStack loadHead(UUID uuid){
+        for(String s : knownHeads){
+            if(s.contains(uuid.toString())){
+                CustomSkull skull = new CustomSkull(s);
+                return skull.getSkull();
+            }
+        }
+        return null;
+    }
+
+    public static void saveHead(String data){
+        knownHeads.add(data);
+    }
+
+    public static void clearKnownHeads(){
+        knownHeads.clear();
     }
 
     public String toString(){

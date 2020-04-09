@@ -12,6 +12,7 @@ public class CustomBook {
         for(int i = 1; i <= bookMeta.getPageCount(); i++){
             //Adds a Unique UUID to each page
             bookMeta.setPage(i,(bookMeta.getPage(i)+","+ UUID.randomUUID().toString()).trim());
+            CustomSkull.saveHead(bookMeta.getPage(i));
         }
         return bookMeta;
     }
@@ -26,15 +27,21 @@ public class CustomBook {
     }
 
     public static Inventory open(BookMeta bookMeta){
-                Inventory inv = Bukkit.createInventory(null,54,"Bibliocranium");
-                if(CustomBook.isDisplayOnly(bookMeta)){
-                    inv = Bukkit.createInventory(null,54,"Bibliocranium : Display Only");
-                }
-                for(int i = 1; i <= bookMeta.getPageCount(); i++) {
-                    CustomSkull skull = new CustomSkull(bookMeta.getPage(i));
-                    inv.addItem(skull.getSkull());
-                }
-                return inv;
+        Inventory inv = Bukkit.createInventory(null,54,"Bibliocranium");
+        if(CustomBook.isDisplayOnly(bookMeta)){
+            inv = Bukkit.createInventory(null,54,"Bibliocranium : Display Only");
+        }
+        for(int i = 1; i <= bookMeta.getPageCount(); i++) {
+            CustomSkull skull = new CustomSkull(bookMeta.getPage(i));
+            if(CustomSkull.loadHead(skull.getUUId()) == null){
+                inv.addItem(skull.getSkull());
+                CustomSkull.saveHead(bookMeta.getPage(i));
+            }else{
+                inv.addItem(CustomSkull.loadHead(skull.getUUId()));
+            }
+
+        }
+        return inv;
     }
 
 }
