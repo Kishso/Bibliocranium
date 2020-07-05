@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -19,15 +18,20 @@ public class CustomSkull extends ItemStack{
     private String textureValue; //In base64
     private UUID uuid;
 
-    public static  ArrayList<String> knownHeads = new ArrayList<String>();
+    public static Material tradeMaterial = Material.PLAYER_HEAD;
+    public static ItemStack preciseTradeItem = new ItemStack(Material.PLAYER_HEAD);
 
-    //Manual Constructor
-    public CustomSkull(String name, String texture){
-        displayName = name;
-        textureValue = texture;
-        uuid = UUID.randomUUID();
-    }
-
+    /**
+     * Constructs a CustomSkull instance using a String of data
+     * formatted as "displayName,textureValue,uuid." If the data does not
+     * contain a uuid, the constructor generates a random uuid
+     * and assigns it to the instance. Prints "Formatted Incorrectly if
+     * not formatted correctly.
+     *
+     * @param line String containing the necessary data to create a new
+     *             instance. Formatted as "displayName,textureValue,uuid"
+     *             Note: ",uuid" is optional.
+     */
     //Automatic Constructor
     public CustomSkull(String line){
         try {
@@ -44,19 +48,16 @@ public class CustomSkull extends ItemStack{
         }
     }
 
-    public UUID getUUId(){
-        return uuid;
+    public UUID getUUID(){
+        return  uuid;
     }
 
-    public String getTextureValue(){
-        return textureValue;
-    }
-
-    public String getDisplayName(){
-        return displayName;
-    }
-
-
+    /**
+     * Used to retrieve an in-game skull represented
+     * by the instance of the class.
+     *
+     * @return An ItemStack of the represented head.
+     */
     //Skull Get Method (Slightly modified from Stef on Spigot Forums. God Bless this man)
     public ItemStack getSkull() {
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
@@ -86,24 +87,12 @@ public class CustomSkull extends ItemStack{
         return skull;
     }
 
-    public static ItemStack loadHead(UUID uuid){
-        for(String s : knownHeads){
-            if(s.contains(uuid.toString())){
-                CustomSkull skull = new CustomSkull(s);
-                return skull.getSkull();
-            }
-        }
-        return null;
-    }
-
-    public static void saveHead(String data){
-        knownHeads.add(data);
-    }
-
-    public static void clearKnownHeads(){
-        knownHeads.clear();
-    }
-
+    /**
+     * Convert CustomSkull to a String format of the
+     * following: displayName,textureValue,uuid
+     *
+     * @return string representation of the class
+     */
     public String toString(){
         return displayName+','+textureValue+','+uuid.toString();
     }

@@ -2,4 +2,13 @@ name: Bibliocranium
 version: 1.0
 author: Kishso
 main: me.kishso.bibliocranium.Main
-api-version: 1.15
+api-version: 1.16
+permissions:
+  bibliocranium.getbook:
+    description: Allows a player to get a plugin dedicated book
+    default: true
+commands:
+  bibliocranium:
+    description: General Command
+    usage: /<command> <arg>
+    permission: bibliocranium.getbook
